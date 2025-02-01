@@ -67,7 +67,7 @@ export default function Page() {
             )}
             <TextField
               name="email"
-              label="อีเมล"
+              label="Email"
               variant="outlined" // เปลี่ยนให้เป็น outlined
               value={formData.email}
               onChange={(e) =>
@@ -78,7 +78,7 @@ export default function Page() {
             <TextField
               type="password"
               name="password"
-              label="รหัสผ่าน"
+              label="Password"
               variant="outlined" // เปลี่ยนให้เป็น outlined
               value={formData.password}
               onChange={(e) =>
