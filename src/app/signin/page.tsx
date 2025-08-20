@@ -1,5 +1,5 @@
 "use client";
-import React, { FormEvent, useState } from "react";
+import { useState, FormEvent } from "react";
 import { Box, Card, CardContent, Typography, TextField, Button, Stack, Link } from "@mui/material";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -14,16 +14,17 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const res: any = await signIn("credentials", {
+      const res = await signIn("credentials", {
         redirect: false,
         email: formData.email,
         password: formData.password,
       });
-      if (!res?.error) {
+
+      if (res && "error" in res && !res.error) {
         router.push("/");
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -47,7 +48,13 @@ export default function LoginPage() {
         }}
       >
         <CardContent>
-          <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            align="center"
+            sx={{ fontWeight: 600 }}
+          >
             Sign In
           </Typography>
 
@@ -89,7 +96,7 @@ export default function LoginPage() {
               </Button>
 
               <Typography variant="body2" align="center">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/signup" underline="hover">
                   Sign Up
                 </Link>

@@ -1,7 +1,7 @@
 "use client";
 
-import { Box, Typography, Button } from "@mui/material";
-import { useSession, signIn } from "next-auth/react";
+import { Box, Typography } from "@mui/material";
+import { useSession } from "next-auth/react";
 import Dashboard from "./components/Dashboard";
 
 const UserDashboard = () => {
