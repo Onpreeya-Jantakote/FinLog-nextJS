@@ -1,68 +1,45 @@
-import NextAuth from "next-auth/next";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import LineProvider from "next-auth/providers/line";
-import { MongoClient } from "mongodb";
+import { connectToDatabase } from "@/app/lib/mongodb";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
+import type { JWT } from "next-auth/jwt";
+import type { Session, User } from "next-auth";
 
-dotenv.config();
-
-const uri: string = process.env.MONGODB_URI!;
-const dbName: string = "financial-app";
-
-async function connectToDatabase() {
-  const client = new MongoClient(uri);
-  try {
-    await client.connect();
-    return { db: client.db(dbName), client };
-  } catch (error) {
-    console.error("Database connection error:", error);
-    throw new Error("Database connection failed");
-  }
-}
-
-const handler = NextAuth({
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/signin",
-  },
-  callbacks: {
-    redirect({ url, baseUrl }) {
-      return baseUrl;
-    },
-  },
+export const authOptions = {
   providers: [
-    LineProvider({
-      clientId: process.env.LINE_CLIENT_ID!,
-      clientSecret: process.env.LINE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: "Credentials",
-      credentials: { email: {}, password: {} },
-      async authorize(credentials, req) {
-        if (!credentials) {
-          throw new Error("Credentials are required");
-        }
-        const { email, password }: { email: string; password: string } = credentials;
-        
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
         const { db, client } = await connectToDatabase();
-        
-        const user = await db.collection("users").findOne({ email });
-        if (!user) {
-          return null;
-        }
+        const user = await db.collection("users").findOne({ email: credentials?.email });
+        await client.close();
 
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-          return null;
+        if (user && credentials?.password && (await bcrypt.compare(credentials.password, user.password))) {
+          return { id: user._id.toString(), name: user.fullname, email: user.email };
         }
-
-        return { id: user._id.toString(), email: user.email, name: user.name };
+        return null;
       },
     }),
   ],
-});
+  session: {
+    strategy: "jwt" as const,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+    async session({ session, token }: { session: Session; token: JWT }) {
+      if (session.user) session.user.id = token.id as string;
+      return session;
+    },
+  },
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

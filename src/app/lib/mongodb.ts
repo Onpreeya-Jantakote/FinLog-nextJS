@@ -1,16 +1,11 @@
-import mongoose from "mongoose";
- 
-const uri = process.env.MONGODB_URI;
+import { MongoClient } from "mongodb";
 
-let cachedDb: mongoose.Connection | null = null;
+const uri = process.env.MONGODB_URI!;
+const dbName = "financial-app";
 
 export async function connectToDatabase() {
-  if (cachedDb) return cachedDb;
-  if(uri){
-    const opts = { dbName: "topay-list"};
-    const conn = await mongoose.connect(uri, opts);
-    cachedDb = conn.connection;
-    return cachedDb;
-  }
-  return null;
-} 
+  const client = new MongoClient(uri);
+  await client.connect();
+  const db = client.db(dbName);
+  return { db, client };
+}

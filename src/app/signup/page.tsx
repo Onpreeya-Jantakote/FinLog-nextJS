@@ -1,100 +1,167 @@
 "use client";
-import { Button, Stack, TextField, Typography, Box, Link } from "@mui/material";
-import React from "react";
-import { FormEvent } from "react";
+import React, { FormEvent, useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Link,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
 
-export default function Page() {
-  const [formData, setFormData] = React.useState({
+export default function SignupPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({
+    fullname: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
-  const [message, setMessage] = React.useState("");
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
+
+    if (form.password !== form.confirmPassword) {
+      setMessage("Passwords do not match.");
+      setIsError(true);
+      return;
+    }
+
     try {
-      const response = await fetch("../api/auth/signup", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullname: form.fullname,
+          email: form.email,
+          password: form.password,
+          confirmPassword: form.confirmPassword,
+        }),
       });
-      const result = await response.json();
-      if (result.status) {
-        setMessage("สมัครสมาชิกสำเร็จ!");
-      } else {
-        setMessage(result.message || "สมัครสมาชิกล้มเหลว");
+      const data = await res.json();
+
+      setMessage(data.message);
+      setIsError(!data.status);
+
+      if (data.status) {
+        setForm({ fullname: "", email: "", password: "", confirmPassword: "" });
+        router.push("/signin");
       }
-    } catch (e) {
-      console.error(e);
-      setMessage("เกิดข้อผิดพลาดในการสมัครสมาชิก");
+    } catch (err) {
+      console.error(err);
+      setMessage("An error occurred during signup.");
+      setIsError(true);
     }
   };
 
   return (
     <Box
       sx={{
+        minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        height: "100vh",
-        bgcolor: "#f5f5f5", // พื้นหลังของหน้า
-        p: 3,
+        alignItems: "center",
+        bgcolor: "#f0f2f5",
+        px: 2,
       }}
     >
-      <Box
-        sx={{
-          border: "1px solid #ccc", // กรอบสีเทา
-          borderRadius: 2,
-          p: 3,
-          boxShadow: 3,
-          bgcolor: "white", // พื้นหลังของกรอบ
-          width: 400, // กำหนดความกว้างให้กรอบ
-        }}
+      <Card
+        sx={{ maxWidth: 400, width: "100%", borderRadius: 4, boxShadow: 6 }}
       >
-        <form onSubmit={handleSubmit}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            สมัครสมาชิก
+        <CardContent>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            align="center"
+            sx={{ fontWeight: 600 }}
+          >
+            Sign Up
           </Typography>
-          <Stack spacing={2}>
-            {message && (
-              <Typography variant="body2" color="error">
-                {message}
+
+          {message && (
+            <Typography
+              variant="body2"
+              color={isError ? "error.main" : "success.main"}
+              align="center"
+              sx={{ mb: 2 }}
+            >
+              {message}
+            </Typography>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              <TextField
+                label="Full Name"
+                variant="outlined"
+                value={form.fullname}
+                onChange={(e) => setForm({ ...form, fullname: e.target.value })}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Email"
+                type="email"
+                variant="outlined"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Password"
+                type="password"
+                variant="outlined"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Confirm Password"
+                type="password"
+                variant="outlined"
+                value={form.confirmPassword}
+                onChange={(e) =>
+                  setForm({ ...form, confirmPassword: e.target.value })
+                }
+                required
+                fullWidth
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  py: 1.5,
+                  fontWeight: 600,
+                  bgcolor: "primary.main",
+                  "&:hover": { bgcolor: "primary.dark" },
+                  borderRadius: 3,
+                  textTransform: "none",
+                }}
+                fullWidth
+              >
+                Sign Up
+              </Button>
+
+              <Typography variant="body2" align="center">
+                Already have an account?{" "}
+                <Link href="/signin" underline="hover">
+                  Sign In
+                </Link>
               </Typography>
-            )}
-            <TextField
-              name="email"
-              label="Email"
-              variant="outlined" // เปลี่ยนให้เป็น outlined
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required // เพิ่มการตรวจสอบการกรอก
-            />
-            <TextField
-              type="password"
-              name="password"
-              label="Password"
-              variant="outlined" // เปลี่ยนให้เป็น outlined
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required // เพิ่มการตรวจสอบการกรอก
-            />
-            <Button type="submit" variant="contained" color="primary">
-              สมัคร
-            </Button>
-            <Link href="/signin" variant="body2" sx={{ mb: 2 }}>
-              มีบัญชีอยู่แล้ว? เข้าสู่ระบบ
-            </Link>
-          </Stack>
-        </form>
-      </Box>
+            </Stack>
+          </form>
+        </CardContent>
+      </Card>
     </Box>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
-import { Typography, Stack, TextField, Button, Link, Box } from "@mui/material";
+import React, { FormEvent, useState } from "react";
+import { Box, Card, CardContent, Typography, TextField, Button, Stack, Link } from "@mui/material";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { FormEvent } from "react";
 
-export default function Page() {
+export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
@@ -20,7 +20,6 @@ export default function Page() {
         password: formData.password,
       });
       if (!res?.error) {
-        // redirect
         router.push("/");
       }
     } catch (e) {
@@ -31,60 +30,74 @@ export default function Page() {
   return (
     <Box
       sx={{
+        minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
-        height: "100vh",
-        bgcolor: "#f5f5f5", // พื้นหลังของหน้า
-        p: 3,
+        alignItems: "center",
+        bgcolor: "#f0f2f5",
+        px: 2,
       }}
     >
-      <Box
+      <Card
         sx={{
-          border: "1px solid #ccc", // กรอบสีเทา
-          borderRadius: 2,
-          p: 3,
-          boxShadow: 3,
-          bgcolor: "white", // พื้นหลังของกรอบ
-          width: 400, // กำหนดความกว้างให้กรอบ
+          maxWidth: 400,
+          width: "100%",
+          borderRadius: 3,
+          boxShadow: 6,
         }}
       >
-        <form onSubmit={handleSubmit}>
-        <Typography variant="h4" component="h1" gutterBottom>
-        เข้าสู่ระบบ
-        </Typography>
-          <Stack spacing={2}>
-            <TextField
-              name="email"
-              label="อีเมล"
-              variant="outlined" // เปลี่ยนให้เป็น outlined
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required // เพิ่มการตรวจสอบการกรอก
-            />
-            <TextField
-              type="password"
-              name="password"
-              label="รหัสผ่าน"
-              variant="outlined" // เปลี่ยนให้เป็น outlined
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required // เพิ่มการตรวจสอบการกรอก
-            />
-            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-              ลงชื่อเข้าใช้
-            </Button>
-            <Link href="/signup" variant="body2" sx={{ mb: 2 }}>
-              ไม่มีบัญชี? ลงทะเบียน
-            </Link>
-          </Stack>
-        </form>
-      </Box>
+        <CardContent>
+          <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+            Sign In
+          </Typography>
+
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={3}>
+              <TextField
+                label="Email"
+                type="email"
+                variant="outlined"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                fullWidth
+              />
+
+              <TextField
+                label="Password"
+                type="password"
+                variant="outlined"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                fullWidth
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  mt: 1,
+                  py: 1.5,
+                  fontWeight: 600,
+                  bgcolor: "primary.main",
+                  "&:hover": { bgcolor: "primary.dark" },
+                }}
+                fullWidth
+              >
+                Sign In
+              </Button>
+
+              <Typography variant="body2" align="center">
+                Don't have an account?{" "}
+                <Link href="/signup" underline="hover">
+                  Sign Up
+                </Link>
+              </Typography>
+            </Stack>
+          </form>
+        </CardContent>
+      </Card>
     </Box>
   );
 }
