@@ -20,7 +20,7 @@ interface EditExpenseFormProps {
   onSave: (updatedExpense: Expense) => void;
 }
 
-const categories = ["Food", "Transport", "Shopping", "Entertainment", "Other"];
+const categories = ["Food", "Transport", "Entertainment", "Shopping", "Utilities", "Healthcare", "Other"];
 
 export default function EditExpenseForm({
   open,
@@ -36,7 +36,6 @@ export default function EditExpenseForm({
     date: new Date().toISOString(),
   });
 
-  // โหลดข้อมูลจาก prop expense มาลง form เวลาเปิด Dialog
   useEffect(() => {
     if (expense) {
       setFormData(expense);
